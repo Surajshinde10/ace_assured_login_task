@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -54,14 +53,14 @@ class _HomePageState extends State<HomePage> {
           itemCount: products.length,
           itemBuilder: (context, index) {
             final product = products[index];
-            final prices = product['prices'];
+            final prices = product['variants'][0]['prices'];
 
             return Card(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Image.network(
-                    product['image'] ?? '',
+                    product['thumbnail'] ?? '',
                     height: 120.0,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -76,7 +75,7 @@ class _HomePageState extends State<HomePage> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      'Amount: \$${prices?['amount'] ?? '0.00'}',
+                      'Amount: \$${prices?[0]['amount'] ?? '0.00'}',
                       style: TextStyle(color: Colors.red),
                     ),
                   ),
