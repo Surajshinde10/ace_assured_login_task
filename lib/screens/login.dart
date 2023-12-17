@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
 
 import 'home_screen.dart';
 
@@ -39,6 +41,12 @@ class _LoginPageState extends State<LoginPage> {
             ElevatedButton(
               onPressed: () {
                 login(emailController.text, passwordController.text);
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //   SnackBar(
+                //     content: Text('Login Successfully'),
+                //     duration: Duration(seconds: 3),
+                //   ),
+                // );
               },
               child: Text('Login'),
             ),
@@ -48,53 +56,84 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // Future<void> login(String email, String password) async {
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse('https://medusa-production-d0a5.up.railway.app/store/auth/token/'),
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: jsonEncode({
+  //         'email': email,
+  //         'password': password,
+  //       }),
+  //     );
+  //
+  //     print('Login Response Status Code: ${response.statusCode}');
+  //     print('Login Response Body: ${response.body}');
+  //
+  //     if (response.statusCode == 200) {
+  //       final Map<String, dynamic> data = json.decode(response.body);
+  //       final String accessToken = data['access_token'];
+  //
+  //       await saveBearerToken(accessToken);
+  //
+  //       Navigator.pushReplacement(
+  //         context,
+  //         MaterialPageRoute(builder: (context) => HomePage()),
+  //       );
+  //     } else {
+  //       throw Exception('Invalid credentials');
+  //     }
+  //   } catch (error) {
+  //     print('Error during login: $error');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text(${response.body}'),
+  //         duration: Duration(seconds: 3),
+  //       ),
+  //     );
+  //   }
+  // }
+
   Future<void> login(String email, String password) async {
-    try {
-      final response = await http.post(
-        Uri.parse('https://medusa-production-d0a5.up.railway.app/store/auth/token/'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
+    final response = await http.post(
+      Uri.parse('https://medusa-production-d0a5.up.railway.app/store/auth/token/'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+      }),
+    );
+
+    print('Login Response Status Code: ${response.statusCode}');
+    print('Login Response Body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      final String accessToken = data['access_token'];
+
+      await saveBearerToken(accessToken);
+
+      print('Before navigation');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
       );
-
-      print('Login Response Status Code: ${response.statusCode}');
-      print('Login Response Body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-        final String accessToken = data['access_token'];
-
-        await saveBearerToken(accessToken);
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
-      } else {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text('Login Failed'),
-              content: Text('Invalid credentials. Please try again.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-      }
-    } catch (error) {
-      print('Error during login: $error');
+      print('After navigation');
+    } else {
+      print('Error during login');
+      Fluttertoast.showToast(
+        msg: response.body,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
     }
   }
 
@@ -103,10 +142,3 @@ class _LoginPageState extends State<LoginPage> {
     prefs.setString('access_token', token);
   }
 }
-
-
-
-
-
-
-
